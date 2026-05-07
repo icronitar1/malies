@@ -1,0 +1,48 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "cantina_lotti",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "dataInizio", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "cantina_vasche",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "codice", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "campagna_attivita",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "data", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "magazzino_movimenti",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "data", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "magazzino_prodotti",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "categoria", "order": "ASCENDING" },
+        { "fieldPath": "nome", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "commerciale_ordini",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "data", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
