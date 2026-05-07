@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#7C1D2E">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Malies">
+  <meta name="description" content="Gestionale aziendale Vigne di Malies">
+  <title>Gestionale di Malies</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-192.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── Loading ─────────────────────────── -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-wine">
+      <div class="wine-drop"></div>
+    </div>
+    <p>Vigne di Malies</p>
+  </div>
+
+  <!-- ── Login ───────────────────────────── -->
+  <div id="login-screen" class="login-screen hidden">
+    <div class="login-backdrop"></div>
+    <div class="login-card">
+      <div class="login-logo">
+        <span class="logo-icon">🍷</span>
+        <h1>Vigne di Malies</h1>
+        <p>Gestionale Aziendale</p>
+      </div>
+      <div class="login-form">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="utente@malies.it" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div id="login-error" class="login-error hidden"></div>
+        <button id="login-btn" class="btn-login">Accedi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── App Shell ────────────────────────── -->
+  <div id="app-shell" class="app-shell hidden">
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🍷</div>
+        <div class="brand-text">
+          <span class="brand-name">Malies</span>
+          <span class="brand-sub">Gestionale</span>
+        </div>
+      </div>
+
+      <ul class="nav-menu" id="nav-menu">
+        <li class="nav-item active" data-module="dashboard">
+          <span class="nav-icon">◫</span>
+          <span class="nav-label">Dashboard</span>
+        </li>
+        <li class="nav-item" data-module="cantina">
+          <span class="nav-icon">🏛</span>
+          <span class="nav-label">Cantina</span>
+        </li>
+        <li class="nav-item" data-module="campagna">
+          <span class="nav-icon">🌿</span>
+          <span class="nav-label">Campagna</span>
+        </li>
+        <li class="nav-item" data-module="magazzino">
+          <span class="nav-icon">📦</span>
+          <span class="nav-label">Magazzino</span>
+        </li>
+        <li class="nav-item" data-module="commerciale">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Commerciale</span>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar">M</div>
+          <div class="user-details">
+            <span class="user-name" id="user-name">Utente</span>
+            <span class="user-role">Vigne di Malies</span>
+          </div>
+        </div>
+        <button class="btn-logout" id="logout-btn" title="Esci">⏏</button>
+      </div>
+    </nav>
+
+    <!-- Mobile toggle -->
+    <button class="nav-toggle" id="nav-toggle">☰</button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Main -->
+    <main class="main-content">
+      <div id="module-container"></div>
+    </main>
+
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
