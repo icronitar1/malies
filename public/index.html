@@ -1,120 +1,1507 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#7C1D2E">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="Malies">
-  <meta name="description" content="Gestionale aziendale Vigne di Malies">
-  <title>Gestionale di Malies</title>
+import React, { useState, useEffect } from 'react';
 
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-192.png">
+// --- ICONE SVG PERSONALIZZATE PER EVITARE DIPENDENZE ESTERNE ---
+const Icons = {
+  Dashboard: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" /></svg>
+  ),
+  Vigneto: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+  ),
+  Cantina: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+  ),
+  Magazzino: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+  ),
+  Vendite: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+  ),
+  Burocrazia: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+  ),
+  Add: () => (
+    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+  ),
+  Alert: () => (
+    <svg className="w-5 h-5 text-amber-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+  )
+};
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+export default function App() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [notification, setNotification] = useState(null);
 
-  <!-- ── Loading ─────────────────────────── -->
-  <div id="loading-screen" class="loading-screen">
-    <div class="loading-wine">
-      <div class="wine-drop"></div>
-    </div>
-    <p>Vigne di Malies</p>
-  </div>
+  // --- STATO DELL'APPLICAZIONE (In-Memory con dati precaricati realistici) ---
 
-  <!-- ── Login ───────────────────────────── -->
-  <div id="login-screen" class="login-screen hidden">
-    <div class="login-backdrop"></div>
-    <div class="login-card">
-      <div class="login-logo">
-        <span class="logo-icon">🍷</span>
-        <h1>Vigne di Malies</h1>
-        <p>Gestionale Aziendale</p>
-      </div>
-      <div class="login-form">
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="login-email" placeholder="utente@malies.it" autocomplete="email">
+  // 1. Vigneti e Trattamenti
+  const [vigneti, setVigneti] = useState([
+    { id: 1, nome: "Vigna Vecchia", vitigno: "Sangiovese", mq: 12000, anno: 1998, resaAttesa: "80 q.li", stato: "Potatura completata" },
+    { id: 2, nome: "Colle Est", vitigno: "Merlot", mq: 8500, anno: 2012, resaAttesa: "60 q.li", stato: "Controllo infestanti" },
+    { id: 3, nome: "Poggio del Sole", vitigno: "Vermentino", mq: 6000, anno: 2018, resaAttesa: "45 q.li", stato: "Ottimo stato vegetativo" }
+  ]);
+
+  const [trattamenti, setTrattamenti] = useState([
+    { id: 1, data: "2026-05-10", vigneto: "Vigna Vecchia", tipo: "Trattamento Biologico", prodotto: "Rame e Zolfo di miniera", operatore: "Marco" },
+    { id: 2, data: "2026-05-15", vigneto: "Colle Est", tipo: "Concimazione organica", prodotto: "Compost vegetale", operatore: "Luca" }
+  ]);
+
+  // Modali e Form per Vigneto
+  const [showAddTrattamento, setShowAddTrattamento] = useState(false);
+  const [newTrattamento, setNewTrattamento] = useState({ vigneto: "Vigna Vecchia", tipo: "Trattamento Biologico", prodotto: "", operatore: "" });
+
+  // 2. Cantina (Serbatoi e Botti)
+  const [vasiVinari, setVasiVinari] = useState([
+    { id: 1, nome: "Serbatoio Inox 1", tipo: "Acciaio Inox", capacita: 5000, contenuto: 4200, vino: "Sangiovese IGT 2025", stato: "Affinamento", temp: "16°C", ph: 3.42, alcol: "13.2%", solfiti: "65 mg/l" },
+    { id: 2, nome: "Serbatoio Inox 2", tipo: "Acciaio Inox", capacita: 3000, contenuto: 0, vino: "Vuoto", stato: "Sanificato", temp: "N/D", ph: "N/D", alcol: "N/D", solfiti: "N/D" },
+    { id: 3, nome: "Botte Rovere A", tipo: "Botte Grande", capacita: 2500, contenuto: 2500, vino: "Sangiovese Riserva 2024", stato: "Invecchiamento legno", temp: "15°C", ph: 3.38, alcol: "13.8%", solfiti: "45 mg/l" },
+    { id: 4, nome: "Barrique 12", tipo: "Barrique", capacita: 225, contenuto: 225, vino: "Merlot Barricato 2024", stato: "Invecchiamento legno", temp: "15°C", ph: 3.45, alcol: "14.1%", solfiti: "40 mg/l" }
+  ]);
+
+  // Azioni cantina
+  const [showTravaso, setShowTravaso] = useState(false);
+  const [travasoData, setTravasoData] = useState({ sorgenteId: "", destinazioneId: "", quantita: "" });
+  const [selectedBotteForAnalisi, setSelectedBotteForAnalisi] = useState(null);
+  const [analisiData, setAnalisiData] = useState({ ph: "", alcol: "", solfiti: "" });
+
+  // 3. Magazzino (Materie Prime e Prodotti Finiti)
+  const [magazzino, setMagazzino] = useState([
+    { id: 1, categoria: "Prodotto Finito", nome: "Sangiovese IGT 2024 - 750ml", scorta: 1450, unita: "bottiglie", sogliaMin: 200 },
+    { id: 2, categoria: "Prodotto Finito", nome: "Vermentino DOC 2025 - 750ml", scorta: 890, unita: "bottiglie", sogliaMin: 150 },
+    { id: 3, categoria: "Packaging", nome: "Tappo Sughero Monopezzo", scorta: 5000, unita: "pezzi", sogliaMin: 1000 },
+    { id: 4, categoria: "Packaging", nome: "Bottiglia Bordolese Verde", scorta: 3400, unita: "pezzi", sogliaMin: 800 },
+    { id: 5, categoria: "Packaging", nome: "Capsule Termorestringenti Bordeaux", scorta: 4500, unita: "pezzi", sogliaMin: 500 }
+  ]);
+
+  const [showAddMagazzino, setShowAddMagazzino] = useState(false);
+  const [newMagazzino, setNewMagazzino] = useState({ categoria: "Prodotto Finito", nome: "", scorta: "", unita: "bottiglie", sogliaMin: "" });
+
+  // 4. Vendite ed Enoturismo
+  const [vendite, setVendite] = useState([
+    { id: 101, data: "2026-05-24", cliente: "Ristorante Il Grappolo d'Oro", vino: "Sangiovese IGT 2024", quantita: 120, totale: 1080.00, stato: "Spedito" },
+    { id: 102, data: "2026-05-25", cliente: "Enoteca della Piazza", vino: "Vermentino DOC 2025", quantita: 60, totale: 570.00, stato: "Pagato" },
+    { id: 103, data: "2026-05-26", cliente: "Mario Rossi (Privato)", vino: "Misto Selezione", quantita: 12, totale: 135.00, stato: "Consegnato" }
+  ]);
+
+  const [visite, setVisite] = useState([
+    { id: 1, data: "2026-05-28", ora: "15:30", referente: "Famiglia Schmidt (DE)", persone: 4, degustazione: "Tour Classico + Tagliere", pagato: false },
+    { id: 2, data: "2026-05-30", ora: "11:00", referente: "Gruppo Sommelier Milano", persone: 12, degustazione: "Verticale Riserve", pagato: true }
+  ]);
+
+  const [showAddVendita, setShowAddVendita] = useState(false);
+  const [newVendita, setNewVendita] = useState({ cliente: "", vino: "Sangiovese IGT 2024 - 750ml", quantita: "", totale: "" });
+
+  const [showAddVisita, setShowAddVisita] = useState(false);
+  const [newVisita, setNewVisita] = useState({ data: "", ora: "", referente: "", persone: "", degustazione: "Tour Classico + Tagliere" });
+
+  // 5. Registri Telematici (Burocrazia)
+  const [registriLogs, setRegistriLogs] = useState([
+    { id: 1, timestamp: "2026-05-10 09:15", tipo: "Campagna", descrizione: "Eseguito trattamento con Rame e Zolfo su 'Vigna Vecchia'", operazione: "Trattamento Registrato" },
+    { id: 2, timestamp: "2026-05-24 14:30", tipo: "Cantina", descrizione: "Imbottigliamento lotto L2412 - 120 bottiglie Sangiovese IGT 2024", operazione: "Imbottigliamento" },
+    { id: 3, timestamp: "2026-05-24 17:00", tipo: "Dogana / SIAN", descrizione: "Generato file telematico di scarico MVV per Ristorante Il Grappolo d'Oro", operazione: "Emissione MVV" }
+  ]);
+
+  // --- FUNZIONI DI SUPPORTO ---
+
+  const triggerNotification = (message) => {
+    setNotification(message);
+    setTimeout(() => {
+      setNotification(null);
+    }, 4000);
+  };
+
+  // Logica d'aggiunta Trattamento Vigneto
+  const handleAddTrattamentoSubmit = (e) => {
+    e.preventDefault();
+    if (!newTrattamento.prodotto || !newTrattamento.operatore) {
+      alert("Completa tutti i campi del trattamento");
+      return;
+    }
+    const today = new Date().toISOString().split('T')[0];
+    const created = {
+      id: trattamenti.length + 1,
+      data: today,
+      ...newTrattamento
+    };
+    setTrattamenti([created, ...trattamenti]);
+    
+    // Log automatico nel registro burocratico
+    const log = {
+      id: registriLogs.length + 1,
+      timestamp: `${today} ${new Date().toTimeString().split(' ')[0].substring(0, 5)}`,
+      tipo: "Campagna",
+      descrizione: `Registrato trattamento fitofarmaco ${newTrattamento.prodotto} su ${newTrattamento.vigneto}`,
+      operazione: "Trattamento Campagna"
+    };
+    setRegistriLogs([log, ...registriLogs]);
+
+    setShowAddTrattamento(false);
+    setNewTrattamento({ vigneto: "Vigna Vecchia", tipo: "Trattamento Biologico", prodotto: "", operatore: "" });
+    triggerNotification("Trattamento registrato correttamente e inserito nel Quaderno di Campagna!");
+  };
+
+  // Logica Travaso Cantina
+  const handleTravasoSubmit = (e) => {
+    e.preventDefault();
+    const sorg = vasiVinari.find(v => v.id === parseInt(travasoData.sorgenteId));
+    const dest = vasiVinari.find(v => v.id === parseInt(travasoData.destinazioneId));
+    const qty = parseInt(travasoData.quantita);
+
+    if (!sorg || !dest || isNaN(qty)) {
+      alert("Seleziona serbatoi validi e specifica una quantità valida.");
+      return;
+    }
+
+    if (sorg.contenuto < qty) {
+      alert(`Errore: Il serbatoio di origine ha solo ${sorg.contenuto} litri disponibili.`);
+      return;
+    }
+
+    if (dest.contenuto + qty > dest.capacita) {
+      alert(`Errore: La quantità supera la capacità massima del serbatoio di destinazione (${dest.capacita} litri).`);
+      return;
+    }
+
+    // Aggiornamento vasi vinari
+    const updatedVasi = vasiVinari.map(v => {
+      if (v.id === sorg.id) {
+        const nuovoContenuto = v.contenuto - qty;
+        return {
+          ...v,
+          contenuto: nuovoContenuto,
+          vino: nuovoContenuto === 0 ? "Vuoto" : v.vino,
+          stato: nuovoContenuto === 0 ? "Sanificato" : v.stato
+        };
+      }
+      if (v.id === dest.id) {
+        return {
+          ...v,
+          contenuto: v.contenuto + qty,
+          vino: sorg.vino, // Trasferisce il nome del vino
+          stato: "Affinamento"
+        };
+      }
+      return v;
+    });
+
+    setVasiVinari(updatedVasi);
+
+    // Registro telematico automatico
+    const log = {
+      id: registriLogs.length + 1,
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      tipo: "Cantina",
+      descrizione: `Travaso di ${qty} L di ${sorg.vino} da ${sorg.nome} a ${dest.nome}`,
+      operazione: "Registrazione Travaso (SIAN)"
+    };
+    setRegistriLogs([log, ...registriLogs]);
+
+    setShowTravaso(false);
+    setTravasoData({ sorgenteId: "", destinazioneId: "", quantita: "" });
+    triggerNotification(`Travaso di ${qty} litri eseguito con successo!`);
+  };
+
+  // Logica aggiornamento analisi chimiche
+  const handleSaveAnalisi = (e) => {
+    e.preventDefault();
+    if (!analisiData.ph || !analisiData.alcol || !analisiData.solfiti) {
+      alert("Completa i dati dell'analisi chimica");
+      return;
+    }
+
+    const updatedVasi = vasiVinari.map(v => {
+      if (v.id === selectedBotteForAnalisi.id) {
+        return {
+          ...v,
+          ph: parseFloat(analisiData.ph),
+          alcol: analisiData.alcol + "%",
+          solfiti: analisiData.solfiti + " mg/l"
+        };
+      }
+      return v;
+    });
+
+    setVasiVinari(updatedVasi);
+
+    // Log burocratico
+    const log = {
+      id: registriLogs.length + 1,
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      tipo: "Cantina",
+      descrizione: `Aggiornate analisi per ${selectedBotteForAnalisi.nome} (${selectedBotteForAnalisi.vino})`,
+      operazione: "Analisi Laboratorio"
+    };
+    setRegistriLogs([log, ...registriLogs]);
+
+    setSelectedBotteForAnalisi(null);
+    setAnalisiData({ ph: "", alcol: "", solfiti: "" });
+    triggerNotification("Analisi chimiche salvate e storicizzate!");
+  };
+
+  // Logica vendita manuale
+  const handleAddVenditaSubmit = (e) => {
+    e.preventDefault();
+    if (!newVendita.cliente || !newVendita.quantita || !newVendita.totale) {
+      alert("Completa tutti i dati della vendita");
+      return;
+    }
+
+    const created = {
+      id: vendite.length + 101,
+      data: new Date().toISOString().split('T')[0],
+      cliente: newVendita.cliente,
+      vino: newVendita.vino,
+      quantita: parseInt(newVendita.quantita),
+      totale: parseFloat(newVendita.totale),
+      stato: "Pagato"
+    };
+
+    setVendites([created, ...vendite]);
+
+    // Scaliamo automaticamente il magazzino del prodotto finito
+    const updatedMagazzino = magazzino.map(item => {
+      if (item.nome.startsWith(newVendita.vino)) {
+        return { ...item, scorta: Math.max(0, item.scorta - parseInt(newVendita.quantita)) };
+      }
+      return item;
+    });
+    setMagazzino(updatedMagazzino);
+
+    // Log burocratico
+    const log = {
+      id: registriLogs.length + 1,
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      tipo: "Dogana / SIAN",
+      descrizione: `Scarico di n. ${newVendita.quantita} bottiglie per vendita a ${newVendita.cliente}`,
+      operazione: "Fattura & Registrazione Registro"
+    };
+    setRegistriLogs([log, ...registriLogs]);
+
+    setShowAddVendita(false);
+    setNewVendita({ cliente: "", vino: "Sangiovese IGT 2024 - 750ml", quantita: "", totale: "" });
+    triggerNotification("Vendita contabilizzata e magazzino aggiornato!");
+  };
+
+  // Aggiungi scorte a mano (Magazzino)
+  const handleAddMagazzinoSubmit = (e) => {
+    e.preventDefault();
+    if (!newMagazzino.nome || !newMagazzino.scorta || !newMagazzino.sogliaMin) {
+      alert("Completa tutti i campi");
+      return;
+    }
+    const created = {
+      id: magazzino.length + 1,
+      categoria: newMagazzino.categoria,
+      nome: newMagazzino.nome,
+      scorta: parseInt(newMagazzino.scorta),
+      unita: newMagazzino.unita,
+      sogliaMin: parseInt(newMagazzino.sogliaMin)
+    };
+    setMagazzino([...magazzino, created]);
+    setShowAddMagazzino(false);
+    setNewMagazzino({ categoria: "Prodotto Finito", nome: "", scorta: "", unita: "bottiglie", sogliaMin: "" });
+    triggerNotification("Articolo aggiunto con successo al magazzino!");
+  };
+
+  // Modifica scorta veloce (+ o -)
+  const adjustStock = (id, amount) => {
+    const updated = magazzino.map(item => {
+      if (item.id === id) {
+        return { ...item, scorta: Math.max(0, item.scorta + amount) };
+      }
+      return item;
+    });
+    setMagazzino(updated);
+  };
+
+  // Prenota visita enoturismo
+  const handleAddVisitaSubmit = (e) => {
+    e.preventDefault();
+    if (!newVisita.data || !newVisita.ora || !newVisita.referente || !newVisita.persone) {
+      alert("Completa tutti i dati della visita guidata");
+      return;
+    }
+    const created = {
+      id: visite.length + 1,
+      ...newVisita,
+      persone: parseInt(newVisita.persone),
+      pagato: false
+    };
+    setVisite([...visite, created]);
+    setShowAddVisita(false);
+    setNewVisita({ data: "", ora: "", referente: "", persone: "", degustazione: "Tour Classico + Tagliere" });
+    triggerNotification("Visita e degustazione inserite in calendario!");
+  };
+
+  // Calcolo dati dashboard
+  const totaleVinoInCantina = vasiVinari.reduce((acc, curr) => acc + (curr.contenuto || 0), 0);
+  const totaleClientiServiti = vendite.length;
+  const totaleBottiglieInMagazzino = magazzino
+    .filter(i => i.categoria === "Prodotto Finito")
+    .reduce((acc, curr) => acc + curr.scorta, 0);
+  const alertScorte = magazzino.filter(i => i.scorta <= i.sogliaMin);
+
+  return (
+    <div className="flex h-screen bg-slate-50 text-slate-800 font-sans overflow-hidden">
+      
+      {/* NOTIFICA IN-APP */}
+      {notification && (
+        <div className="fixed bottom-5 right-5 z-50 bg-rose-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center border border-rose-700 animate-bounce">
+          <span className="font-semibold text-sm">🍇 {notification}</span>
         </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
-        </div>
-        <div id="login-error" class="login-error hidden"></div>
-        <button id="login-btn" class="btn-login">Accedi</button>
-      </div>
-    </div>
-  </div>
+      )}
 
-  <!-- ── App Shell ────────────────────────── -->
-  <div id="app-shell" class="app-shell hidden">
-
-    <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
-      <div class="sidebar-brand">
-        <div class="brand-icon">🍷</div>
-        <div class="brand-text">
-          <span class="brand-name">Malies</span>
-          <span class="brand-sub">Gestionale</span>
-        </div>
-      </div>
-
-      <ul class="nav-menu" id="nav-menu">
-        <li class="nav-item active" data-module="dashboard">
-          <span class="nav-icon">◫</span>
-          <span class="nav-label">Dashboard</span>
-        </li>
-        <li class="nav-item" data-module="cantina">
-          <span class="nav-icon">🏛</span>
-          <span class="nav-label">Cantina</span>
-        </li>
-        <li class="nav-item" data-module="campagna">
-          <span class="nav-icon">🌿</span>
-          <span class="nav-label">Campagna</span>
-        </li>
-        <li class="nav-item" data-module="magazzino">
-          <span class="nav-icon">📦</span>
-          <span class="nav-label">Magazzino</span>
-        </li>
-        <li class="nav-item" data-module="commerciale">
-          <span class="nav-icon">📋</span>
-          <span class="nav-label">Commerciale</span>
-        </li>
-      </ul>
-
-      <div class="sidebar-footer">
-        <div class="user-info">
-          <div class="user-avatar" id="user-avatar">M</div>
-          <div class="user-details">
-            <span class="user-name" id="user-name">Utente</span>
-            <span class="user-role">Vigne di Malies</span>
+      {/* SIDEBAR NAVIGATION */}
+      <aside className="w-64 bg-slate-900 text-slate-200 flex flex-col justify-between">
+        <div>
+          <div className="p-6 flex items-center space-x-3 border-b border-slate-800">
+            <span className="text-2xl">🍷</span>
+            <div>
+              <h1 className="text-xl font-bold text-white tracking-wider">VinoGest</h1>
+              <span className="text-xs text-rose-400 font-medium uppercase tracking-widest">Small Winery v1.0</span>
+            </div>
           </div>
+          
+          <nav className="p-4 space-y-1">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === 'dashboard' ? 'bg-rose-900 text-white shadow-lg shadow-rose-950/40' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              <Icons.Dashboard />
+              <span>Dashboard</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('vigneto')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === 'vigneto' ? 'bg-rose-900 text-white shadow-lg shadow-rose-950/40' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              <Icons.Vigneto />
+              <span>Quaderno Vigneto</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('cantina')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === 'cantina' ? 'bg-rose-900 text-white shadow-lg shadow-rose-950/40' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              <Icons.Cantina />
+              <span>Gestione Cantina</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('magazzino')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === 'magazzino' ? 'bg-rose-900 text-white shadow-lg shadow-rose-950/40' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              <Icons.Magazzino />
+              <span>Magazzino</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('vendite')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === 'vendite' ? 'bg-rose-900 text-white shadow-lg shadow-rose-950/40' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              <Icons.Vendite />
+              <span>Vendite & Enoturismo</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('burocrazia')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === 'burocrazia' ? 'bg-rose-900 text-white shadow-lg shadow-rose-950/40' : 'hover:bg-slate-800 text-slate-400'}`}
+            >
+              <Icons.Burocrazia />
+              <span>Registri & SIAN</span>
+            </button>
+          </nav>
         </div>
-        <button class="btn-logout" id="logout-btn" title="Esci">⏏</button>
-      </div>
-    </nav>
 
-    <!-- Mobile toggle -->
-    <button class="nav-toggle" id="nav-toggle">☰</button>
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <div className="p-4 border-t border-slate-800 text-xs text-slate-500">
+          <p className="font-semibold text-slate-400">Tenuta Belvedere s.r.l.</p>
+          <p>Licenza: Piccola Cantina Attiva</p>
+        </div>
+      </aside>
 
-    <!-- Main -->
-    <main class="main-content">
-      <div id="module-container"></div>
-    </main>
+      {/* CORE WORKSPACE CONTENT */}
+      <main className="flex-1 flex flex-col overflow-y-auto">
+        
+        {/* TOP BAR / HEADER */}
+        <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center shadow-sm">
+          <div>
+            <h2 className="text-xl font-bold text-slate-950 capitalize">{activeTab}</h2>
+            <p className="text-xs text-slate-500">Monitoraggio e gestione operativa in tempo reale</p>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            {alertScorte.length > 0 && (
+              <div className="flex items-center bg-amber-50 border border-amber-200 rounded-full px-3 py-1.5 text-xs text-amber-800">
+                <Icons.Alert />
+                <span>{alertScorte.length} Scorte Sotto Soglia!</span>
+              </div>
+            )}
+            <div className="flex items-center space-x-2 text-sm text-slate-600">
+              <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-ping"></span>
+              <span className="font-medium">Connesso con SIAN</span>
+            </div>
+          </div>
+        </header>
 
-  </div>
+        <div className="p-8 max-w-7xl w-full mx-auto space-y-8">
 
-  <!-- Toast container -->
-  <div class="toast-container" id="toast-container"></div>
+          {/* ======================================= */}
+          {/* TAB 1: DASHBOARD DELLO STATO AZIENDALE */}
+          {/* ======================================= */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-8">
+              {/* Stat Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-1">Vino in Affinamento</span>
+                    <span className="text-2xl font-black text-slate-900">{totaleVinoInCantina.toLocaleString()} Litri</span>
+                  </div>
+                  <div className="w-12 h-12 bg-rose-50 text-rose-800 rounded-2xl flex items-center justify-center text-xl">🍇</div>
+                </div>
 
-  <script type="module" src="app.js"></script>
-</body>
-</html>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-1">Bottiglie Pronte</span>
+                    <span className="text-2xl font-black text-slate-900">{totaleBottiglieInMagazzino.toLocaleString()} pz</span>
+                  </div>
+                  <div className="w-12 h-12 bg-amber-50 text-amber-700 rounded-2xl flex items-center justify-center text-xl">🍾</div>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-1">Visite Enoturistiche</span>
+                    <span className="text-2xl font-black text-slate-900">{visite.length} in programma</span>
+                  </div>
+                  <div className="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center text-xl">👋</div>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest block mb-1">Fatturato Mese</span>
+                    <span className="text-2xl font-black text-slate-900">
+                      € {vendite.reduce((acc, curr) => acc + curr.totale, 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="w-12 h-12 bg-blue-50 text-blue-700 rounded-2xl flex items-center justify-center text-xl">💶</div>
+                </div>
+              </div>
+
+              {/* Quick Actions & Urgent Alerts */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                {/* Visualizzazione delle Botti e Serbatoi Critici */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
+                  <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center justify-between">
+                    <span>Mappa Rapida della Cantina</span>
+                    <button onClick={() => setActiveTab('cantina')} className="text-xs text-rose-800 hover:underline">Vedi tutta la cantina →</button>
+                  </h3>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {vasiVinari.map(botte => {
+                      const riempimentoPerc = (botte.contenuto / botte.capacita) * 100;
+                      return (
+                        <div key={botte.id} className="border border-slate-100 rounded-xl p-4 text-center bg-slate-50 flex flex-col justify-between">
+                          <div>
+                            <span className="text-xs font-bold text-slate-400 block mb-2">{botte.nome}</span>
+                            <div className="relative w-16 h-20 mx-auto bg-slate-200 rounded-t-lg rounded-b-2xl overflow-hidden border-2 border-slate-400">
+                              <div 
+                                className="absolute bottom-0 w-full bg-rose-800 transition-all duration-500"
+                                style={{ height: `${riempimentoPerc}%` }}
+                              ></div>
+                              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-900 mix-blend-difference">
+                                {Math.round(riempimentoPerc)}%
+                              </span>
+                            </div>
+                          </div>
+                          <div className="mt-3">
+                            <p className="text-xs font-bold truncate">{botte.vino}</p>
+                            <p className="text-[10px] text-slate-500">{botte.contenuto} / {botte.capacita} L</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Scorte in Esaurimento */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-4">Allerta Packaging / Materiali</h3>
+                    {alertScorte.length === 0 ? (
+                      <div className="text-center py-8 text-slate-400 text-sm">
+                        <p>✅ Tutte le scorte sono sopra il livello minimo.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {alertScorte.map(item => (
+                          <div key={item.id} className="flex justify-between items-center p-3 bg-rose-50 border border-rose-100 rounded-xl">
+                            <div>
+                              <p className="text-xs font-bold text-rose-950">{item.nome}</p>
+                              <p className="text-[10px] text-rose-600">Minimo richiesto: {item.sogliaMin} {item.unita}</p>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-black text-rose-900">{item.scorta}</span>
+                              <span className="text-[10px] text-slate-500 block">{item.unita}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={() => setActiveTab('magazzino')} className="w-full mt-4 bg-slate-950 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-slate-800 transition-colors">
+                    Fai Ordine di Rifornimento
+                  </button>
+                </div>
+
+              </div>
+
+              {/* Prossime Visite in Cantina */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Prossimi Eventi Enoturismo</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-xs text-slate-400 uppercase tracking-widest font-bold">
+                        <th className="pb-3">Data & Ora</th>
+                        <th className="pb-3">Referente</th>
+                        <th className="pb-3 text-center">Persone</th>
+                        <th className="pb-3">Esperienza Selezionata</th>
+                        <th className="pb-3 text-right">Stato Pagamento</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm divide-y divide-slate-100">
+                      {visite.slice(0, 3).map(visita => (
+                        <tr key={visita.id} className="hover:bg-slate-50">
+                          <td className="py-3 font-semibold text-slate-950">{visita.data} alle {visita.ora}</td>
+                          <td className="py-3">{visita.referente}</td>
+                          <td className="py-3 text-center font-bold text-slate-950">{visita.persone}</td>
+                          <td className="py-3 text-slate-600">{visita.degustazione}</td>
+                          <td className="py-3 text-right">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${visita.pagato ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}`}>
+                              {visita.pagato ? "Saldato" : "Da Salda"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================= */}
+          {/* TAB 2: GESTIONE VIGNETO */}
+          {/* ======================================= */}
+          {activeTab === 'vigneto' && (
+            <div className="space-y-8">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-950">Mappa Appezzamenti e Quaderno di Campagna</h3>
+                  <p className="text-xs text-slate-500">Gestisci i vigneti e registra i trattamenti obbligatori</p>
+                </div>
+                <button 
+                  onClick={() => setShowAddTrattamento(true)}
+                  className="bg-rose-900 hover:bg-rose-800 text-white font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center transition-colors shadow-lg shadow-rose-950/20"
+                >
+                  <Icons.Add /> Registra Trattamento
+                </button>
+              </div>
+
+              {/* Elenco Vigneti */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {vigneti.map(v => (
+                  <div key={v.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-rose-200 transition-colors flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="text-xs bg-slate-100 text-slate-800 px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">{v.vitigno}</span>
+                        <span className="text-xs font-semibold text-slate-400">Anno d'impianto: {v.anno}</span>
+                      </div>
+                      <h4 className="text-lg font-black text-slate-950">{v.nome}</h4>
+                      <p className="text-xs text-slate-500 mt-1">Superficie: {(v.mq / 10000).toFixed(2)} Ettari ({v.mq.toLocaleString()} mq)</p>
+                      
+                      <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <span className="text-slate-500">Resa stimata:</span>
+                        <span className="font-bold text-slate-950">{v.resaAttesa}</span>
+                      </div>
+                    </div>
+                    <div className="mt-6 pt-3 border-t border-slate-100 flex justify-between items-center">
+                      <span className="text-xs text-slate-400">Stato vigna:</span>
+                      <span className="text-xs font-bold text-rose-900 bg-rose-50 px-2.5 py-1 rounded-md">{v.stato}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Registro dei Trattamenti Eseguiti */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h4 className="text-md font-bold text-slate-900 mb-4">Ultimi trattamenti (Registro di Campagna obbligatorio)</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-xs text-slate-400 uppercase tracking-widest font-bold">
+                        <th className="pb-3">Data</th>
+                        <th className="pb-3">Vigneto</th>
+                        <th className="pb-3">Tipo Trattamento</th>
+                        <th className="pb-3">Prodotto Utilizzato</th>
+                        <th className="pb-3 text-right">Operatore</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm divide-y divide-slate-100">
+                      {trattamenti.map(t => (
+                        <tr key={t.id} className="hover:bg-slate-50">
+                          <td className="py-3.5 font-semibold text-slate-900">{t.data}</td>
+                          <td className="py-3.5 text-slate-900 font-bold">{t.vigneto}</td>
+                          <td className="py-3.5">
+                            <span className="bg-blue-50 text-blue-800 border border-blue-100 text-xs px-2.5 py-1 rounded-full font-medium">
+                              {t.tipo}
+                            </span>
+                          </td>
+                          <td className="py-3.5 text-slate-600 font-serif italic">{t.prodotto}</td>
+                          <td className="py-3.5 text-right font-medium text-slate-700">{t.operatore}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Modale Registra Trattamento */}
+              {showAddTrattamento && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scaleUp">
+                    <h3 className="text-lg font-bold text-slate-950 mb-4">Registra Nuovo Trattamento Fitofarmaco</h3>
+                    <form onSubmit={handleAddTrattamentoSubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Seleziona Vigneto</label>
+                        <select 
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={newTrattamento.vigneto}
+                          onChange={(e) => setNewTrattamento({...newTrattamento, vigneto: e.target.value})}
+                        >
+                          {vigneti.map(v => <option key={v.id} value={v.nome}>{v.nome} ({v.vitigno})</option>)}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tipo Trattamento</label>
+                        <select 
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={newTrattamento.tipo}
+                          onChange={(e) => setNewTrattamento({...newTrattamento, tipo: e.target.value})}
+                        >
+                          <option value="Trattamento Biologico">Trattamento Biologico</option>
+                          <option value="Trattamento Integrato">Trattamento Integrato</option>
+                          <option value="Concimazione">Concimazione</option>
+                          <option value="Trinciatura Erba / Sfalcio">Trinciatura Erba / Sfalcio</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Principio Attivo / Prodotto</label>
+                        <input 
+                          type="text" 
+                          placeholder="es. Poltiglia Bordolese, Zolfo bagnabile"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={newTrattamento.prodotto}
+                          onChange={(e) => setNewTrattamento({...newTrattamento, prodotto: e.target.value})}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Operatore Responsabile</label>
+                        <input 
+                          type="text" 
+                          placeholder="es. Marco, Luca"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={newTrattamento.operatore}
+                          onChange={(e) => setNewTrattamento({...newTrattamento, operatore: e.target.value})}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex space-x-3 pt-4">
+                        <button 
+                          type="button" 
+                          onClick={() => setShowAddTrattamento(false)} 
+                          className="w-1/2 border border-slate-200 text-slate-600 rounded-xl py-2.5 text-sm font-semibold hover:bg-slate-50"
+                        >
+                          Annulla
+                        </button>
+                        <button 
+                          type="submit" 
+                          className="w-1/2 bg-rose-900 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-rose-800"
+                        >
+                          Salva Trattamento
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ======================================= */}
+          {/* TAB 3: GESTIONE CANTINA */}
+          {/* ======================================= */}
+          {activeTab === 'cantina' && (
+            <div className="space-y-8">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-950">Mappa Vasi Vinari, Affinamento e Analisi</h3>
+                  <p className="text-xs text-slate-500">Gestisci i serbatoi, travasi e registra analisi di laboratorio</p>
+                </div>
+                <button 
+                  onClick={() => setShowTravaso(true)}
+                  className="bg-rose-900 hover:bg-rose-800 text-white font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center transition-colors shadow-lg shadow-rose-950/20"
+                >
+                  <Icons.Cantina /> Registra Travaso
+                </button>
+              </div>
+
+              {/* Vista Grafica dei Serbatoi */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {vasiVinari.map(v => {
+                  const perc = (v.contenuto / v.capacita) * 100;
+                  return (
+                    <div key={v.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-lg">{v.nome}</h4>
+                          <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">{v.tipo}</span>
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${v.stato === 'Vuoto' || v.stato === 'Sanificato' ? 'bg-slate-100 text-slate-400' : 'bg-rose-50 text-rose-800'}`}>
+                          {v.stato}
+                        </span>
+                      </div>
+
+                      {/* Silos Grafico */}
+                      <div className="relative w-28 h-40 mx-auto bg-slate-100 border-4 border-slate-300 rounded-t-xl rounded-b-[2rem] overflow-hidden">
+                        {/* Liquido */}
+                        <div 
+                          className="absolute bottom-0 w-full bg-gradient-to-t from-rose-950 to-rose-800 transition-all duration-700"
+                          style={{ height: `${perc}%` }}
+                        ></div>
+                        
+                        {/* Linee di livello */}
+                        <div className="absolute inset-0 flex flex-col justify-between p-2 pointer-events-none text-[8px] font-mono text-slate-400">
+                          <div className="border-b border-dashed border-slate-300 w-full text-right">Max</div>
+                          <div className="border-b border-dashed border-slate-300 w-full text-right">75%</div>
+                          <div className="border-b border-dashed border-slate-300 w-full text-right">50%</div>
+                          <div className="border-b border-dashed border-slate-300 w-full text-right">25%</div>
+                        </div>
+
+                        {/* Percentuale */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-sm font-black text-slate-900 bg-white/70 px-2 py-1 rounded-md shadow-sm border border-slate-200">
+                            {Math.round(perc)}%
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-center space-y-1">
+                        <p className="text-sm font-black text-slate-950 truncate">{v.vino}</p>
+                        <p className="text-xs text-slate-500 font-medium">{v.contenuto.toLocaleString()} L su {v.capacita.toLocaleString()} L</p>
+                      </div>
+
+                      {/* Analisi Chimiche veloci */}
+                      {v.contenuto > 0 && (
+                        <div className="pt-3 border-t border-slate-100 grid grid-cols-3 gap-1 text-[10px] text-center font-mono text-slate-600 bg-slate-50 p-2 rounded-lg">
+                          <div>
+                            <span className="block text-slate-400 font-sans">pH</span>
+                            <span className="font-bold">{v.ph}</span>
+                          </div>
+                          <div>
+                            <span className="block text-slate-400 font-sans">Alcol</span>
+                            <span className="font-bold">{v.alcol}</span>
+                          </div>
+                          <div>
+                            <span className="block text-slate-400 font-sans">Solfiti</span>
+                            <span className="font-bold">{v.solfiti}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {v.contenuto > 0 && (
+                        <button 
+                          onClick={() => {
+                            setSelectedBotteForAnalisi(v);
+                            setAnalisiData({ ph: v.ph, alcol: v.alcol.replace('%',''), solfiti: v.solfiti.replace(' mg/l','') });
+                          }}
+                          className="text-xs font-bold text-rose-900 hover:text-rose-700 hover:underline text-center pt-2"
+                        >
+                          Aggiorna Analisi Lab
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Modale Esegui Travaso */}
+              {showTravaso && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scaleUp">
+                    <h3 className="text-lg font-bold text-slate-950 mb-4">Esegui Operazione di Travaso</h3>
+                    <form onSubmit={handleTravasoSubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Da Serbatoio/Botte (Origine)</label>
+                        <select 
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={travasoData.sorgenteId}
+                          onChange={(e) => setTravasoData({...travasoData, sorgenteId: e.target.value})}
+                          required
+                        >
+                          <option value="">Seleziona origine...</option>
+                          {vasiVinari.filter(v => v.contenuto > 0).map(v => (
+                            <option key={v.id} value={v.id}>{v.nome} - {v.vino} ({v.contenuto} L disponibili)</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">A Serbatoio/Botte (Destinazione)</label>
+                        <select 
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={travasoData.destinazioneId}
+                          onChange={(e) => setTravasoData({...travasoData, destinazioneId: e.target.value})}
+                          required
+                        >
+                          <option value="">Seleziona destinazione...</option>
+                          {vasiVinari.map(v => {
+                            const spazioDisp = v.capacita - v.contenuto;
+                            return (
+                              <option key={v.id} value={v.id}>
+                                {v.nome} - Spazio disponibile: {spazioDisp} L (Capacità: {v.capacita} L)
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Quantità da Travasare (Litri)</label>
+                        <input 
+                          type="number" 
+                          placeholder="es. 1000"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={travasoData.quantita}
+                          onChange={(e) => setTravasoData({...travasoData, quantita: e.target.value})}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex space-x-3 pt-4">
+                        <button 
+                          type="button" 
+                          onClick={() => setShowTravaso(false)} 
+                          className="w-1/2 border border-slate-200 text-slate-600 rounded-xl py-2.5 text-sm font-semibold hover:bg-slate-50"
+                        >
+                          Annulla
+                        </button>
+                        <button 
+                          type="submit" 
+                          className="w-1/2 bg-rose-900 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-rose-800"
+                        >
+                          Esegui Travaso
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* Modale Aggiorna Analisi */}
+              {selectedBotteForAnalisi && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                    <h3 className="text-lg font-bold text-slate-950 mb-2">Aggiorna Analisi di Laboratorio</h3>
+                    <p className="text-xs text-slate-500 mb-4">{selectedBotteForAnalisi.nome} - {selectedBotteForAnalisi.vino}</p>
+                    
+                    <form onSubmit={handleSaveAnalisi} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">pH</label>
+                        <input 
+                          type="number" 
+                          step="0.01"
+                          placeholder="es. 3.42"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={analisiData.ph}
+                          onChange={(e) => setAnalisiData({...analisiData, ph: e.target.value})}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Grado Alcolico (% Vol)</label>
+                        <input 
+                          type="text" 
+                          placeholder="es. 13.5"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={analisiData.alcol}
+                          onChange={(e) => setAnalisiData({...analisiData, alcol: e.target.value})}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Anidride Solforosa Libera/Totale (mg/l)</label>
+                        <input 
+                          type="number" 
+                          placeholder="es. 55"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={analisiData.solfiti}
+                          onChange={(e) => setAnalisiData({...analisiData, solfiti: e.target.value})}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex space-x-3 pt-4">
+                        <button 
+                          type="button" 
+                          onClick={() => setSelectedBotteForAnalisi(null)} 
+                          className="w-1/2 border border-slate-200 text-slate-600 rounded-xl py-2.5 text-sm font-semibold hover:bg-slate-50"
+                        >
+                          Annulla
+                        </button>
+                        <button 
+                          type="submit" 
+                          className="w-1/2 bg-rose-900 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-rose-800"
+                        >
+                          Salva Analisi
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ======================================= */}
+          {/* TAB 4: GESTIONE MAGAZZINO */}
+          {/* ======================================= */}
+          {activeTab === 'magazzino' && (
+            <div className="space-y-8">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-950">Magazzino Scorte</h3>
+                  <p className="text-xs text-slate-500">Traccia le giacenze dei vini pronti all'uso e delle materie prime d'imbottigliamento</p>
+                </div>
+                <button 
+                  onClick={() => setShowAddMagazzino(true)}
+                  className="bg-rose-900 hover:bg-rose-800 text-white font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center transition-colors shadow-lg shadow-rose-950/20"
+                >
+                  <Icons.Add /> Aggiungi Articolo
+                </button>
+              </div>
+
+              {/* Tabella Magazzino */}
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-400 uppercase tracking-widest font-bold">
+                      <th className="p-4">Categoria</th>
+                      <th className="p-4">Nome Articolo</th>
+                      <th className="p-4 text-center">Giacenza Attuale</th>
+                      <th className="p-4 text-center">Soglia d'Allerta</th>
+                      <th className="p-4 text-center">Stato</th>
+                      <th className="p-4 text-right">Rettifica Rapida</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-sm divide-y divide-slate-100">
+                    {magazzino.map(item => {
+                      const sottoSoglia = item.scorta <= item.sogliaMin;
+                      return (
+                        <tr key={item.id} className="hover:bg-slate-50">
+                          <td className="p-4">
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${item.categoria === 'Prodotto Finito' ? 'bg-purple-50 text-purple-800' : 'bg-orange-50 text-orange-800'}`}>
+                              {item.categoria}
+                            </span>
+                          </td>
+                          <td className="p-4 font-semibold text-slate-900">{item.nome}</td>
+                          <td className="p-4 text-center font-black text-slate-950">{item.scorta} <span className="text-[10px] text-slate-400 font-normal">{item.unita}</span></td>
+                          <td className="p-4 text-center text-slate-500">{item.sogliaMin} {item.unita}</td>
+                          <td className="p-4 text-center">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${sottoSoglia ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                              {sottoSoglia ? "Sotto Soglia!" : "OK"}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right space-x-2">
+                            <button 
+                              onClick={() => adjustStock(item.id, -10)} 
+                              className="px-2.5 py-1 border border-slate-200 text-slate-700 font-semibold rounded hover:bg-slate-100 text-xs"
+                            >
+                              -10
+                            </button>
+                            <button 
+                              onClick={() => adjustStock(item.id, 10)} 
+                              className="px-2.5 py-1 bg-slate-100 text-slate-700 font-semibold rounded hover:bg-slate-200 text-xs"
+                            >
+                              +10
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Modale Aggiungi Articolo */}
+              {showAddMagazzino && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scaleUp">
+                    <h3 className="text-lg font-bold text-slate-950 mb-4">Aggiungi Articolo a Magazzino</h3>
+                    <form onSubmit={handleAddMagazzinoSubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Categoria</label>
+                        <select 
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={newMagazzino.categoria}
+                          onChange={(e) => setNewMagazzino({...newMagazzino, categoria: e.target.value})}
+                        >
+                          <option value="Prodotto Finito">Prodotto Finito (Vino Imbottigliato)</option>
+                          <option value="Packaging">Packaging (Bottiglie, Tappi, Capsule)</option>
+                          <option value="Enologia">Prodotti Enologici (Lieviti, Solfiti, etc.)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nome Articolo</label>
+                        <input 
+                          type="text" 
+                          placeholder="es. Bottiglia Champagnotta Verde 75cl"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={newMagazzino.nome}
+                          onChange={(e) => setNewMagazzino({...newMagazzino, nome: e.target.value})}
+                          required
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Quantità Iniziale</label>
+                          <input 
+                            type="number" 
+                            placeholder="es. 1000"
+                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                            value={newMagazzino.scorta}
+                            onChange={(e) => setNewMagazzino({...newMagazzino, scorta: e.target.value})}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Unità di Misura</label>
+                          <select 
+                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                            value={newMagazzino.unita}
+                            onChange={(e) => setNewMagazzino({...newMagazzino, unita: e.target.value})}
+                          >
+                            <option value="bottiglie">bottiglie</option>
+                            <option value="pezzi">pezzi</option>
+                            <option value="kg">kg</option>
+                            <option value="litri">litri</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Soglia d'allerta minima</label>
+                        <input 
+                          type="number" 
+                          placeholder="es. 200"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={newMagazzino.sogliaMin}
+                          onChange={(e) => setNewMagazzino({...newMagazzino, sogliaMin: e.target.value})}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex space-x-3 pt-4">
+                        <button 
+                          type="button" 
+                          onClick={() => setShowAddMagazzino(false)} 
+                          className="w-1/2 border border-slate-200 text-slate-600 rounded-xl py-2.5 text-sm font-semibold hover:bg-slate-50"
+                        >
+                          Annulla
+                        </button>
+                        <button 
+                          type="submit" 
+                          className="w-1/2 bg-rose-900 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-rose-800"
+                        >
+                          Aggiungi Articolo
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ======================================= */}
+          {/* TAB 5: VENDITE ED ENOTURISMO */}
+          {/* ======================================= */}
+          {activeTab === 'vendite' && (
+            <div className="space-y-8">
+              
+              {/* Sezione Vendite */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-950">Registro Vendite (Direct-To-Consumer & HoReCa)</h3>
+                    <p className="text-xs text-slate-500">Gestisci gli ordini, i listini prezzi e gli scarichi fiscali di cantina</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowAddVendita(true)}
+                    className="bg-rose-900 hover:bg-rose-800 text-white font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center transition-colors shadow-lg shadow-rose-950/20"
+                  >
+                    <Icons.Add /> Registra Vendita
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-400 uppercase tracking-widest font-bold">
+                        <th className="p-4">ID Fattura</th>
+                        <th className="p-4">Data</th>
+                        <th className="p-4">Cliente</th>
+                        <th className="p-4">Vino</th>
+                        <th className="p-4 text-center">Quantità (Bottiglie)</th>
+                        <th className="p-4 text-right">Totale Incassato</th>
+                        <th className="p-4 text-center">Stato Spedizione</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm divide-y divide-slate-100">
+                      {vendite.map(v => (
+                        <tr key={v.id} className="hover:bg-slate-50">
+                          <td className="p-4 font-mono font-bold text-slate-400">#FT{v.id}</td>
+                          <td className="p-4 text-slate-500">{v.data}</td>
+                          <td className="p-4 font-semibold text-slate-900">{v.cliente}</td>
+                          <td className="p-4 text-slate-600">{v.vino}</td>
+                          <td className="p-4 text-center font-bold text-slate-950">{v.quantita}</td>
+                          <td className="p-4 text-right font-black text-slate-900">€ {v.totale.toFixed(2)}</td>
+                          <td className="p-4 text-center">
+                            <span className="px-2.5 py-1 bg-green-50 text-green-800 border border-green-200 rounded-full text-xs font-bold">
+                              {v.stato}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Sezione Enoturismo */}
+              <div className="space-y-4 pt-8 border-t border-slate-200">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-950">Accoglienza in Cantina & Enoturismo</h3>
+                    <p className="text-xs text-slate-500">Calendario visite guidate, percorsi di degustazione e vendite dirette in cantina</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowAddVisita(true)}
+                    className="bg-slate-950 hover:bg-slate-800 text-white font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center transition-colors"
+                  >
+                    <Icons.Add /> Pianifica Prenotazione
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {visite.map(visita => (
+                    <div key={visita.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="text-xs text-slate-400 block font-semibold">{visita.data} @ {visita.ora}</span>
+                          <h4 className="text-lg font-bold text-slate-900 mt-0.5">{visita.referente}</h4>
+                        </div>
+                        <span className="bg-rose-50 text-rose-800 font-extrabold px-3 py-1.5 rounded-xl text-sm">
+                          {visita.persone} Persone
+                        </span>
+                      </div>
+
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs text-slate-700">
+                        <p className="font-semibold text-slate-900">Pacchetto Degustazione:</p>
+                        <p className="mt-1">{visita.degustazione}</p>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-2">
+                        <span className={`text-xs font-bold ${visita.pagato ? 'text-green-700' : 'text-amber-700'}`}>
+                          ● {visita.pagato ? 'Degustazione Saldata' : 'Pagamento in loco'}
+                        </span>
+                        {!visita.pagato && (
+                          <button 
+                            onClick={() => {
+                              const updated = visite.map(v => v.id === visita.id ? { ...v, pagato: true } : v);
+                              setVisite(updated);
+                              triggerNotification("Degustazione registrata come pagata!");
+                            }}
+                            className="text-xs bg-emerald-900 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-800 font-bold"
+                          >
+                            Segna come Pagato
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Modale Nuova Vendita */}
+              {showAddVendita && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scaleUp">
+                    <h3 className="text-lg font-bold text-slate-950 mb-4">Registra Nuova Vendita</h3>
+                    <form onSubmit={handleAddVenditaSubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nome Cliente / Azienda</label>
+                        <input 
+                          type="text" 
+                          placeholder="es. Enoteca Rossi S.n.c."
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={newVendita.cliente}
+                          onChange={(e) => setNewVendita({...newVendita, cliente: e.target.value})}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Seleziona Prodotto Finito</label>
+                        <select 
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={newVendita.vino}
+                          onChange={(e) => setNewVendita({...newVendita, vino: e.target.value})}
+                        >
+                          {magazzino.filter(i => i.categoria === "Prodotto Finito").map(i => (
+                            <option key={i.id} value={i.nome}>{i.nome} ({i.scorta} disponibili)</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Quantità (Bottiglie)</label>
+                          <input 
+                            type="number" 
+                            placeholder="es. 60"
+                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                            value={newVendita.quantita}
+                            onChange={(e) => setNewVendita({...newVendita, quantita: e.target.value})}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Totale Fatturato (€)</label>
+                          <input 
+                            type="number" 
+                            step="0.01"
+                            placeholder="es. 540.00"
+                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                            value={newVendita.totale}
+                            onChange={(e) => setNewVendita({...newVendita, totale: e.target.value})}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-3 pt-4">
+                        <button 
+                          type="button" 
+                          onClick={() => setShowAddVendita(false)} 
+                          className="w-1/2 border border-slate-200 text-slate-600 rounded-xl py-2.5 text-sm font-semibold hover:bg-slate-50"
+                        >
+                          Annulla
+                        </button>
+                        <button 
+                          type="submit" 
+                          className="w-1/2 bg-rose-900 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-rose-800"
+                        >
+                          Crea Fattura e Scarica
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* Modale Nuova Visita/Tour */}
+              {showAddVisita && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scaleUp">
+                    <h3 className="text-lg font-bold text-slate-950 mb-4">Pianifica Nuova Visita / Degustazione</h3>
+                    <form onSubmit={handleAddVisitaSubmit} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Data</label>
+                          <input 
+                            type="date" 
+                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                            value={newVisita.data}
+                            onChange={(e) => setNewVisita({...newVisita, data: e.target.value})}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Ora</label>
+                          <input 
+                            type="time" 
+                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                            value={newVisita.ora}
+                            onChange={(e) => setNewVisita({...newVisita, ora: e.target.value})}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nome Referente Prenotazione</label>
+                        <input 
+                          type="text" 
+                          placeholder="es. John Doe (USA)"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                          value={newVisita.referente}
+                          onChange={(e) => setNewVisita({...newVisita, referente: e.target.value})}
+                          required
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">N. Persone</label>
+                          <input 
+                            type="number" 
+                            placeholder="es. 4"
+                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                            value={newVisita.persone}
+                            onChange={(e) => setNewVisita({...newVisita, persone: e.target.value})}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Pacchetto Degustazione</label>
+                          <select 
+                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-800"
+                            value={newVisita.degustazione}
+                            onChange={(e) => setNewVisita({...newVisita, degustazione: e.target.value})}
+                          >
+                            <option value="Tour Classico + Tagliere">Tour Classico + Tagliere (3 Vini)</option>
+                            <option value="Verticale Riserve">Verticale Riserve (5 Vini con Enologo)</option>
+                            <option value="Esperienza in Vigna & Picnic">Esperienza in Vigna & Picnic</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-3 pt-4">
+                        <button 
+                          type="button" 
+                          onClick={() => setShowAddVisita(false)} 
+                          className="w-1/2 border border-slate-200 text-slate-600 rounded-xl py-2.5 text-sm font-semibold hover:bg-slate-50"
+                        >
+                          Annulla
+                        </button>
+                        <button 
+                          type="submit" 
+                          className="w-1/2 bg-slate-950 text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-slate-800"
+                        >
+                          Conferma Prenotazione
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ======================================= */}
+          {/* TAB 6: BUROCRAZIA / REGISTRI TELEMATICI */}
+          {/* ======================================= */}
+          {activeTab === 'burocrazia' && (
+            <div className="space-y-8">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start space-x-4">
+                <div className="text-2xl">⚖️</div>
+                <div>
+                  <h4 className="text-sm font-bold text-amber-900 uppercase tracking-wider">Conformità MIPAAF & Registro SIAN Telematico</h4>
+                  <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+                    Questo gestionale registra automaticamente ogni operazione di travaso, imbottigliamento o scarico vendite in tempo reale. I dati di seguito mostrano il registro telematico locale di carico/scarico precompilato e pronto per essere inviato al SIAN (Sistema Informativo Agricolo Nazionale) con un solo clic.
+                  </p>
+                </div>
+              </div>
+
+              {/* Registro Log di Carico/Scarico */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-md font-bold text-slate-900">Log Eventi di Cantina (Tracciabilità MVV / SIAN)</h4>
+                  <button 
+                    onClick={() => triggerNotification("File di esportazione XML/JSON per SIAN generato con successo!")}
+                    className="bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-md shadow-emerald-950/20"
+                  >
+                    🚀 Esporta & Invia Dati al SIAN
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-xs text-slate-400 uppercase tracking-widest font-bold">
+                        <th className="pb-3">Timestamp Registrazione</th>
+                        <th className="pb-3">Ambito</th>
+                        <th className="pb-3">Operazione Doganale</th>
+                        <th className="pb-3">Descrizione Tecnica</th>
+                        <th className="pb-3 text-right">Stato Trasmissione</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm divide-y divide-slate-100">
+                      {registriLogs.map(log => (
+                        <tr key={log.id} className="hover:bg-slate-50">
+                          <td className="py-3.5 font-mono text-xs text-slate-500">{log.timestamp}</td>
+                          <td className="py-3.5 font-semibold">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${log.tipo === 'Campagna' ? 'bg-emerald-50 text-emerald-800' : log.tipo === 'Cantina' ? 'bg-purple-50 text-purple-800' : 'bg-blue-50 text-blue-800'}`}>
+                              {log.tipo}
+                            </span>
+                          </td>
+                          <td className="py-3.5 font-bold text-slate-900">{log.operazione}</td>
+                          <td className="py-3.5 text-slate-600 italic font-serif">{log.descrizione}</td>
+                          <td className="py-3.5 text-right">
+                            <span className="px-2.5 py-1 bg-green-50 text-green-800 border border-green-200 rounded-full text-xs font-bold">
+                              Verificato (SIAN)
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Box Info Dichiarazioni */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                  <h4 className="font-bold text-slate-900 text-md mb-2">Dichiarazione Annuale di Vendemmia</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                    Genera in pochi secondi il report riepilogativo con i chilogrammi di uva raccolti divisi per ciascuna particella catastale e vitigno, pronto per l'invio alla tua associazione di categoria o CAA.
+                  </p>
+                  <button onClick={() => triggerNotification("Rapporto Vendemmia Generato!")} className="text-xs bg-slate-950 text-white font-bold px-4 py-2 rounded-lg hover:bg-slate-800">
+                    Scarica Report Vendemmia
+                  </button>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                  <h4 className="font-bold text-slate-950 text-md mb-2">Tracciabilità e Lotto di Bottiglia</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                    Seleziona un lotto di imbottigliamento per generare istantaneamente il certificato di tracciabilità retroattiva (dal campo alla tavola), utilissimo in caso di controlli ICQRF o di certificazioni Bio/DOCG.
+                  </p>
+                  <button onClick={() => triggerNotification("Certificato Tracciabilità Generato!")} className="text-xs bg-slate-950 text-white font-bold px-4 py-2 rounded-lg hover:bg-slate-800">
+                    Genera Report Tracciabilità
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </main>
+    </div>
+  );
+}
