@@ -30,7 +30,6 @@ import {
   Users, 
   Tag, 
   Sliders,
-  AlertCircle,
   X,
   Menu,
   ChevronLeft,
@@ -163,7 +162,7 @@ export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
-  // Stati per le notifiche toast personalizzate
+  // Stati per le NOTIFICHE toast personalizzate
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   // Stati per le collezioni dati
