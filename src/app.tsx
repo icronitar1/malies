@@ -38,9 +38,6 @@ import {
   Activity
 } from 'lucide-react';
 
-// Importazione esplicita del file CSS per la compilazione di Vite su Vercel
-import './index.css';
-
 // ==========================================
 // 1. CONFIGURAZIONE FIREBASE & UTILS
 // ==========================================
@@ -202,6 +199,25 @@ export default function App() {
 
   const [isAddingTodo, setIsAddingTodo] = useState(false);
   const [newTodo, setNewTodo] = useState({ title: '', dueDate: '', relatedEntityId: '', relatedEntityType: '' as any });
+
+  // Iniezione programmatica degli stili e delle animazioni personalizzate per evitare importazioni esterne non risolvibili
+  useEffect(() => {
+    const styleId = 'custom-gestionale-styles';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.innerHTML = `
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
 
   // Mostra una notifica personalizzata
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -855,7 +871,7 @@ export default function App() {
                 )}
 
                 {/* 3. Sottomenù Vendite */}
-                {activeArea === 'VENDITES' && (
+                {activeArea === 'VENDITE' && (
                   <>
                     <button 
                       onClick={() => { setVenditeSubView('CLIENTI'); setIsMobileMenuOpen(false); }}
@@ -1322,7 +1338,7 @@ export default function App() {
                 {/* MODAL IMBOTTIGLIAMENTO (AVVIO PROCESSO) */}
                 {activeBottlingTank && (
                   <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-6">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-6 text-sm">
                       <div className="flex justify-between items-center">
                         <div>
                           <h3 className="text-xl font-extrabold text-red-950">Nuovo Lotto Vetro Nudo</h3>
@@ -1495,7 +1511,7 @@ export default function App() {
 
                 {/* Sottoveduta Lotti di imbottigliamento attivi */}
                 {magazzinoSubView === 'PROCESSI_ATTIVI' && (
-                  <div className="space-y-4">
+                  <div className="space-y-4 text-sm">
                     <h3 className="font-extrabold text-lg text-red-950">Lotti in Processo di Imbottigliamento</h3>
                     <p className="text-xs text-gray-500">Masse di vino prelevate dalle vasche di cui va confermato il volume reale e i consumabili usati.</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1529,7 +1545,7 @@ export default function App() {
 
                 {/* MODAL CHIUSURA IMBOTTIGLIAMENTO */}
                 {activeCompleteBottling && (
-                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-sm">
                     <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-6">
                       <div className="flex justify-between items-center">
                         <div>
@@ -1572,7 +1588,7 @@ export default function App() {
 
                 {/* MODAL ETICHETTATURA */}
                 {isLabelingModalOpen && (
-                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-sm">
                     <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-6">
                       <div className="flex justify-between items-center">
                         <div>
@@ -1636,7 +1652,7 @@ export default function App() {
 
                 {/* MODAL AGGIUNTA ARTICOLO MANUALE */}
                 {isAddingItem && (
-                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-sm">
                     <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-6">
                       <div className="flex justify-between items-center">
                         <h3 className="text-xl font-extrabold text-red-950">Nuovo Articolo Magazzino</h3>
@@ -1772,7 +1788,7 @@ export default function App() {
                       </button>
                     </div>
 
-                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 overflow-x-auto">
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 overflow-x-auto text-sm">
                       <table className="w-full text-left border-collapse text-xs">
                         <thead>
                           <tr className="border-b border-gray-100 text-gray-400 font-extrabold uppercase text-[10px]">
@@ -1805,7 +1821,7 @@ export default function App() {
 
                 {/* MODAL NUOVO CLIENTE */}
                 {isAddingClient && (
-                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-sm">
                     <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-6">
                       <div className="flex justify-between items-center">
                         <h3 className="text-xl font-extrabold text-red-950">Aggiungi Cliente</h3>
@@ -1856,7 +1872,7 @@ export default function App() {
 
                 {/* MODAL NUOVO ORDINE */}
                 {isAddingOrder && (
-                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-sm">
                     <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-6">
                       <div className="flex justify-between items-center">
                         <h3 className="text-xl font-extrabold text-red-950">Evasione Spedizione Ordine</h3>
@@ -1935,7 +1951,7 @@ export default function App() {
                 </div>
 
                 {/* Filtro sub view */}
-                <div className="space-y-3">
+                <div className="space-y-3 text-sm">
                   {todos
                     .filter(t => (todoSubView === 'ATTIVI' ? t.status !== 'COMPLETATO' : t.status === 'COMPLETATO'))
                     .map(task => (
@@ -1984,7 +2000,7 @@ export default function App() {
 
                 {/* MODAL CREAZIONE TODO */}
                 {isAddingTodo && (
-                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-sm">
                     <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 space-y-6">
                       <div className="flex justify-between items-center">
                         <h3 className="text-xl font-extrabold text-red-950">Nuovo Promemoria Aziendale</h3>
