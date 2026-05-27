@@ -39,6 +39,9 @@ import {
   Activity
 } from 'lucide-react';
 
+// Importazione esplicita del file CSS per la compilazione di Vite su Vercel
+import './index.css';
+
 // ==========================================
 // 1. CONFIGURAZIONE FIREBASE & UTILS
 // ==========================================
@@ -222,7 +225,6 @@ export default function App() {
       } catch (error: any) {
         console.error("Autenticazione fallita:", error);
         showToast("Accesso limitato dal server. Funzionamento in modalità locale / simulata attiva.", "info");
-        // Forniamo un utente fittizio per abilitare il rendering dell'interfaccia in caso di fallimento di rete
         setUser({ uid: 'local-demo-user', isAnonymous: true } as any);
         setLoading(false);
       }
