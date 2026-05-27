@@ -4,7 +4,6 @@ import { TodoTask, BottlingProcess, Order } from '../types';
 
 interface Props {
   todoSubView: 'ATTIVI' | 'COMPLETATI';
-  setTodoSubView: (v: 'ATTIVI' | 'COMPLETATI') => void;
   todos: TodoTask[];
   isAddingTodo: boolean;
   setIsAddingTodo: (v: boolean) => void;
@@ -20,7 +19,6 @@ interface Props {
 
 export default function Todo({
   todoSubView,
-  setTodoSubView,
   todos,
   isAddingTodo,
   setIsAddingTodo,
