@@ -4,7 +4,6 @@ import { Client, Order, InventoryItem } from '../types';
 
 interface Props {
   venditeSubView: 'CLIENTI' | 'ORDINI';
-  setVenditeSubView: (v: 'CLIENTI' | 'ORDINI') => void;
   clients: Client[];
   orders: Order[];
   inventory: InventoryItem[];
@@ -23,7 +22,6 @@ interface Props {
 
 export default function Vendite({
   venditeSubView,
-  setVenditeSubView,
   clients,
   orders,
   inventory,
