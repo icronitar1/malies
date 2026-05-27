@@ -4,7 +4,6 @@ import { InventoryItem, BottlingProcess } from '../types';
 
 interface Props {
   magazzinoSubView: 'INVENTARIO' | 'PROCESSI_ATTIVI';
-  setMagazzinoSubView: (v: 'INVENTARIO' | 'PROCESSI_ATTIVI') => void;
   inventory: InventoryItem[];
   isLabelingModalOpen: boolean;
   setIsLabelingModalOpen: (v: boolean) => void;
@@ -31,7 +30,6 @@ interface Props {
 
 export default function Magazzino({
   magazzinoSubView,
-  setMagazzinoSubView,
   inventory,
   isLabelingModalOpen,
   setIsLabelingModalOpen,
