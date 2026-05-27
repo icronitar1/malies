@@ -19,8 +19,7 @@ import {
   User
 } from 'firebase/auth';
 import {
-  Wine, Package, ListTodo, ShoppingCart, Leaf, Plus, Check, Trash2,
-  Loader2, Users, Tag, Sliders, X, Menu, ChevronLeft, Home, FileText, Activity
+  Loader2
 } from 'lucide-react';
 import {
   Tank, InventoryItem, BottlingProcess, Client, Order, TodoTask,
@@ -67,9 +66,6 @@ const renderDate = (dateVal: any): string => {
   return String(dateVal);
 };
 
-// ==========================================
-// COMPONENTE PRINCIPALE (ORCHESTRATORE)
-// ==========================================
 export default function MainApp() {
   // ======================= STATI =======================
   const [user, setUser] = useState<User | null>(null);
@@ -82,7 +78,6 @@ export default function MainApp() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Dati
   const [tanks, setTanks] = useState<Tank[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [bottlings, setBottlings] = useState<BottlingProcess[]>([]);
@@ -90,7 +85,7 @@ export default function MainApp() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [todos, setTodos] = useState<TodoTask[]>([]);
 
-  // Form e modali (stati identici all'originale)
+  // Form e modali
   const [isAddingTank, setIsAddingTank] = useState(false);
   const [newTank, setNewTank] = useState({ name: '', capacity: 2000, currentLiters: 1000, wineType: '' });
   const [activeAnalysisTank, setActiveAnalysisTank] = useState<Tank | null>(null);
@@ -111,11 +106,8 @@ export default function MainApp() {
   const [newOrder, setNewOrder] = useState({ clientId: '', productId: '', quantity: 1 });
   const [isAddingTodo, setIsAddingTodo] = useState(false);
   const [newTodo, setNewTodo] = useState({ title: '', dueDate: '', relatedEntityId: '', relatedEntityType: '' as any });
-
-  // Autenticazione
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  // ======================= EFFETTI INIZIALI =======================
   // Stili animazione
   useEffect(() => {
     const styleId = 'custom-gestionale-styles';
@@ -135,16 +127,13 @@ export default function MainApp() {
     }
   }, []);
 
-  // Toast
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 4000);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
   };
 
-  // ======================= AUTENTICAZIONE =======================
+  // Auth observer
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       if (u) {
@@ -171,33 +160,28 @@ export default function MainApp() {
     setIsLoginModalOpen(false);
   };
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    showToast("Sei uscito dal sistema", "info");
-  };
-
-  // ======================= SINCRONIZZAZIONE FIRESTORE =======================
+  // Sincronizzazione Firestore
   useEffect(() => {
     if (!user) return;
 
     const unsubTanks = onSnapshot(collection(db, getCollectionPath('tanks')), (snapshot) => {
-      setTanks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Tank)));
+      setTanks(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Tank)));
       setLoading(false);
     });
     const unsubInventory = onSnapshot(collection(db, getCollectionPath('inventory')), (snapshot) => {
-      setInventory(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as InventoryItem)));
+      setInventory(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as InventoryItem)));
     });
     const unsubBottlings = onSnapshot(collection(db, getCollectionPath('bottlingTasks')), (snapshot) => {
-      setBottlings(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BottlingProcess)));
+      setBottlings(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as BottlingProcess)));
     });
     const unsubClients = onSnapshot(collection(db, getCollectionPath('clients')), (snapshot) => {
-      setClients(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Client)));
+      setClients(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Client)));
     });
     const unsubOrders = onSnapshot(collection(db, getCollectionPath('orders')), (snapshot) => {
-      setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)));
+      setOrders(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Order)));
     });
     const unsubTodos = onSnapshot(collection(db, getCollectionPath('todos')), (snapshot) => {
-      setTodos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TodoTask)));
+      setTodos(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as TodoTask)));
     });
 
     return () => {
@@ -210,7 +194,7 @@ export default function MainApp() {
     };
   }, [user]);
 
-  // ======================= POPOLAMENTO INIZIALE =======================
+  // Popolamento iniziale
   const initializeDefaultData = async () => {
     if (!user) return;
     try {
@@ -267,22 +251,15 @@ export default function MainApp() {
   };
 
   // ======================= FUNZIONI OPERATIVE =======================
-  // Serbatoi
   const handleCreateTank = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTank.name || newTank.capacity <= 0) return;
     try {
-      await addDoc(collection(db, getCollectionPath('tanks')), {
-        ...newTank,
-        currentLiters: Number(newTank.currentLiters)
-      });
+      await addDoc(collection(db, getCollectionPath('tanks')), { ...newTank, currentLiters: Number(newTank.currentLiters) });
       setIsAddingTank(false);
       setNewTank({ name: '', capacity: 2000, currentLiters: 1000, wineType: '' });
       showToast("Nuovo serbatoio registrato con successo!");
-    } catch (err) {
-      console.error(err);
-      showToast("Errore durante la creazione del serbatoio.", "error");
-    }
+    } catch (err) { showToast("Errore durante la creazione del serbatoio.", "error"); }
   };
 
   const handleSaveAnalysis = async (e: React.FormEvent) => {
@@ -298,10 +275,7 @@ export default function MainApp() {
       setActiveAnalysisTank(null);
       setAnalysisData({ ph: '', so2: '', alcohol: '' });
       showToast("Analisi chimica aggiornata correttamente.");
-    } catch (err) {
-      console.error(err);
-      showToast("Impossibile salvare i parametri chimici.", "error");
-    }
+    } catch (err) { showToast("Impossibile salvare i parametri chimici.", "error"); }
   };
 
   const handleStartBottling = async () => {
@@ -316,14 +290,12 @@ export default function MainApp() {
         tankName: activeBottlingTank.name,
         wineType: activeBottlingTank.wineType,
         litersUsed: bottlingLiters,
-        estimatedBottles: estimatedBottles,
+        estimatedBottles,
         status: 'IN_CORSO',
         dateStarted: new Date().toLocaleDateString('it-IT')
       });
       const tankRef = doc(db, getCollectionPath('tanks'), activeBottlingTank.id);
-      await updateDoc(tankRef, {
-        currentLiters: activeBottlingTank.currentLiters - bottlingLiters
-      });
+      await updateDoc(tankRef, { currentLiters: activeBottlingTank.currentLiters - bottlingLiters });
       await addDoc(collection(db, getCollectionPath('todos')), {
         title: `Completare imbottigliamento lotto da ${activeBottlingTank.name} (${activeBottlingTank.wineType})`,
         status: 'IN_CORSO',
@@ -335,10 +307,7 @@ export default function MainApp() {
       setActiveBottlingTank(null);
       setBottlingLiters(0);
       showToast(`Lavorazione avviata. Stimate ${estimatedBottles} bottiglie!`);
-    } catch (err) {
-      console.error(err);
-      showToast("Errore durante l'avvio del processo di imbottigliamento.", "error");
-    }
+    } catch (err) { showToast("Errore durante l'avvio del processo di imbottigliamento.", "error"); }
   };
 
   const handleCompleteBottling = async () => {
@@ -366,16 +335,9 @@ export default function MainApp() {
       const targetName = `${activeCompleteBottling.wineType} - Vetro Nudo`;
       const existingNudo = inventory.find(i => i.name === targetName && i.category === 'VETRO_NUDO');
       if (existingNudo) {
-        await updateDoc(doc(db, getCollectionPath('inventory'), existingNudo.id), {
-          quantity: existingNudo.quantity + actualBottlesCount
-        });
+        await updateDoc(doc(db, getCollectionPath('inventory'), existingNudo.id), { quantity: existingNudo.quantity + actualBottlesCount });
       } else {
-        await addDoc(collection(db, getCollectionPath('inventory')), {
-          name: targetName,
-          category: 'VETRO_NUDO',
-          quantity: actualBottlesCount,
-          unit: 'bottiglie'
-        });
+        await addDoc(collection(db, getCollectionPath('inventory')), { name: targetName, category: 'VETRO_NUDO', quantity: actualBottlesCount, unit: 'bottiglie' });
       }
       const associatedTodo = todos.find(t => t.relatedEntityId === activeCompleteBottling.id);
       if (associatedTodo) {
@@ -384,10 +346,7 @@ export default function MainApp() {
       setActiveCompleteBottling(null);
       setActualBottlesCount(0);
       showToast("Lotto registrato nel magazzino Vetro Nudo e consumabili scaricati.");
-    } catch (err) {
-      console.error(err);
-      showToast("Errore durante il salvataggio dei dati reali.", "error");
-    }
+    } catch (err) { showToast("Errore durante il salvataggio dei dati reali.", "error"); }
   };
 
   const handleLabelingProcess = async (e: React.FormEvent) => {
@@ -399,9 +358,7 @@ export default function MainApp() {
       return;
     }
     try {
-      await updateDoc(doc(db, getCollectionPath('inventory'), sourceItem.id), {
-        quantity: sourceItem.quantity - labelingQty
-      });
+      await updateDoc(doc(db, getCollectionPath('inventory'), sourceItem.id), { quantity: sourceItem.quantity - labelingQty });
       const isDocg = sourceItem.name.toLowerCase().includes('docg');
       const invSnap = await getDocs(collection(db, getCollectionPath('inventory')));
       for (const itemDoc of invSnap.docs) {
@@ -427,16 +384,9 @@ export default function MainApp() {
       const targetFinishedName = sourceItem.name.replace('Vetro Nudo', 'Finito');
       const existingFinished = inventory.find(i => i.name === targetFinishedName && i.category === 'PRODOTTO_FINITO');
       if (existingFinished) {
-        await updateDoc(doc(db, getCollectionPath('inventory'), existingFinished.id), {
-          quantity: existingFinished.quantity + labelingQty
-        });
+        await updateDoc(doc(db, getCollectionPath('inventory'), existingFinished.id), { quantity: existingFinished.quantity + labelingQty });
       } else {
-        await addDoc(collection(db, getCollectionPath('inventory')), {
-          name: targetFinishedName,
-          category: 'PRODOTTO_FINITO',
-          quantity: labelingQty,
-          unit: 'bottiglie'
-        });
+        await addDoc(collection(db, getCollectionPath('inventory')), { name: targetFinishedName, category: 'PRODOTTO_FINITO', quantity: labelingQty, unit: 'bottiglie' });
       }
       await addDoc(collection(db, getCollectionPath('labelings')), {
         bottlesSourceId: sourceItem.id,
@@ -449,13 +399,9 @@ export default function MainApp() {
       setLabelingSource('');
       setLabelingQty(0);
       showToast("Confezionamento completato! Prodotto Finito caricato.");
-    } catch (err) {
-      console.error(err);
-      showToast("Errore durante il processo di etichettatura.", "error");
-    }
+    } catch (err) { showToast("Errore durante il processo di etichettatura.", "error"); }
   };
 
-  // Clienti / Ordini
   const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newClient.name) return;
@@ -464,10 +410,7 @@ export default function MainApp() {
       setIsAddingClient(false);
       setNewClient({ name: '', email: '', phone: '', city: '' });
       showToast("Nuovo cliente registrato in anagrafica.");
-    } catch (err) {
-      console.error(err);
-      showToast("Errore durante la registrazione del cliente.", "error");
-    }
+    } catch (err) { showToast("Errore durante la registrazione del cliente.", "error"); }
   };
 
   const handleCreateOrder = async (e: React.FormEvent) => {
@@ -480,9 +423,7 @@ export default function MainApp() {
       return;
     }
     try {
-      await updateDoc(doc(db, getCollectionPath('inventory'), selectedProduct.id), {
-        quantity: selectedProduct.quantity - newOrder.quantity
-      });
+      await updateDoc(doc(db, getCollectionPath('inventory'), selectedProduct.id), { quantity: selectedProduct.quantity - newOrder.quantity });
       await addDoc(collection(db, getCollectionPath('orders')), {
         clientId: selectedClient?.id,
         clientName: selectedClient?.name,
@@ -494,13 +435,9 @@ export default function MainApp() {
       setIsAddingOrder(false);
       setNewOrder({ clientId: '', productId: '', quantity: 1 });
       showToast("Ordine evaso con successo! Scarico magazzino completato.");
-    } catch (err) {
-      console.error(err);
-      showToast("Errore durante la registrazione dell'ordine.", "error");
-    }
+    } catch (err) { showToast("Errore durante la registrazione dell'ordine.", "error"); }
   };
 
-  // TODO
   const handleCreateTodo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTodo.title) return;
@@ -526,10 +463,7 @@ export default function MainApp() {
       setIsAddingTodo(false);
       setNewTodo({ title: '', dueDate: '', relatedEntityId: '', relatedEntityType: '' as any });
       showToast("Promemoria aggiunto alla bacheca.");
-    } catch (err) {
-      console.error(err);
-      showToast("Errore nell'inserimento del promemoria.", "error");
-    }
+    } catch (err) { showToast("Errore nell'inserimento del promemoria.", "error"); }
   };
 
   const toggleTodoStatus = async (task: TodoTask) => {
@@ -540,21 +474,16 @@ export default function MainApp() {
     };
     try {
       await updateDoc(doc(db, getCollectionPath('todos'), task.id), { status: nextStatusMap[task.status] });
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   const handleDeleteTodo = async (id: string) => {
     try {
       await deleteDoc(doc(db, getCollectionPath('todos'), id));
       showToast("Task rimosso definitivamente.");
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  // Magazzino item
   const handleCreateInventoryItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItem.name || newItem.quantity < 0) return;
@@ -563,20 +492,13 @@ export default function MainApp() {
       setIsAddingItem(false);
       setNewItem({ name: '', category: 'MATERIALE_SECCO', quantity: 0, unit: 'pz' });
       showToast("Articolo aggiunto al magazzino generale.");
-    } catch (err) {
-      console.error(err);
-      showToast("Errore durante l'aggiunta dell'articolo.", "error");
-    }
+    } catch (err) { showToast("Errore durante l'aggiunta dell'articolo.", "error"); }
   };
 
   const handleQuickAddStock = async (itemId: string, currentQty: number, amount: number) => {
     try {
-      await updateDoc(doc(db, getCollectionPath('inventory'), itemId), {
-        quantity: Math.max(0, currentQty + amount)
-      });
-    } catch (err) {
-      console.error(err);
-    }
+      await updateDoc(doc(db, getCollectionPath('inventory'), itemId), { quantity: Math.max(0, currentQty + amount) });
+    } catch (err) { console.error(err); }
   };
 
   // ======================= RENDER =======================
@@ -588,114 +510,80 @@ export default function MainApp() {
             <h1 className="text-3xl font-black text-red-950">Vigne di Malies</h1>
             <p className="text-sm text-gray-500 mt-2">Accedi per gestire la cantina</p>
           </div>
-          <button
-            onClick={() => setIsLoginModalOpen(true)}
-            className="w-full py-4 bg-red-950 text-white font-bold rounded-xl shadow-lg hover:bg-red-900 transition"
-          >
+          <button onClick={() => setIsLoginModalOpen(true)} className="w-full py-4 bg-red-950 text-white font-bold rounded-xl shadow-lg hover:bg-red-900 transition">
             Accedi con Email/Password
           </button>
-          <LoginModal
-            isOpen={isLoginModalOpen}
-            onClose={() => setIsLoginModalOpen(false)}
-            onLogin={handleLogin}
-            onRegister={handleRegister}
-          />
+          <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} onLogin={handleLogin} onRegister={handleRegister} />
         </div>
       </div>
     );
   }
 
-  // Utente autenticato: interfaccia completa con sidebar e moduli
   return (
     <div className="flex flex-col md:flex-row h-screen bg-[#F9F9FB] text-[#1E1E24] font-sans overflow-hidden">
       <ToastContainer toasts={toasts} onDismiss={(id) => setToasts(prev => prev.filter(t => t.id !== id))} />
 
-      {/* Sidebar e header mobile (visibili solo quando non siamo nell'HUB) */}
       {activeArea !== 'HUB' && (
         <>
-          {/* Header mobile */}
           <div className="md:hidden bg-white border-b border-[#EBEBEF] px-4 py-3 flex items-center justify-between z-40 shrink-0">
-            <button
-              onClick={() => setActiveArea('HUB')}
-              className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-950"
-            >
+            <button onClick={() => setActiveArea('HUB')} className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-950">
               <ChevronLeft className="w-4 h-4" /> Home
             </button>
             <h1 className="font-extrabold text-sm text-red-950 uppercase tracking-wider">{activeArea}</h1>
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-1.5 rounded-lg border border-[#EBEBEF] text-gray-700 bg-gray-50 hover:bg-gray-100"
-            >
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-1.5 rounded-lg border border-[#EBEBEF] text-gray-700 bg-gray-50 hover:bg-gray-100">
               <Menu className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Sidebar */}
-          <aside className={`
-            fixed md:relative top-0 bottom-0 left-0 w-80 bg-white border-r border-[#EBEBEF] flex flex-col justify-between shrink-0 z-50 transition-transform duration-300
-            ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-          `}>
+          <aside className={`fixed md:relative top-0 bottom-0 left-0 w-80 bg-white border-r border-[#EBEBEF] flex flex-col justify-between shrink-0 z-50 transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
             <div>
               <div className="p-5 border-b border-[#F4F4F6] space-y-4">
-                <button
-                  onClick={() => { setActiveArea('HUB'); setIsMobileMenuOpen(false); }}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-red-950/5 hover:bg-red-950/10 text-red-950 rounded-xl text-xs font-bold transition border border-red-950/10"
-                >
+                <button onClick={() => { setActiveArea('HUB'); setIsMobileMenuOpen(false); }} className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-red-950/5 hover:bg-red-950/10 text-red-950 rounded-xl text-xs font-bold transition border border-red-950/10">
                   <Home className="w-4 h-4" /> Torna alla Dashboard
                 </button>
                 <div className="flex items-center gap-2 pt-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                    Area attiva: <span className="text-gray-700">{activeArea}</span>
-                  </p>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Area attiva: <span className="text-gray-700">{activeArea}</span></p>
                 </div>
               </div>
 
               <nav className="p-4 space-y-1.5">
                 {activeArea === 'CANTINA' && (
                   <>
-                    <button onClick={() => { setCantinaSubView('SERBATOI'); setIsMobileMenuOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${cantinaSubView === 'SERBATOI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
+                    <button onClick={() => { setCantinaSubView('SERBATOI'); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${cantinaSubView === 'SERBATOI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
                       <Wine className="w-4 h-4" /> Mappa Serbatoi
                     </button>
-                    <button onClick={() => { setCantinaSubView('ANALISI_STORICO'); setIsMobileMenuOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${cantinaSubView === 'ANALISI_STORICO' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
+                    <button onClick={() => { setCantinaSubView('ANALISI_STORICO'); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${cantinaSubView === 'ANALISI_STORICO' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
                       <Activity className="w-4 h-4" /> Registro Analisi & Laboratorio
                     </button>
                   </>
                 )}
                 {activeArea === 'MAGAZZINO' && (
                   <>
-                    <button onClick={() => { setMagazzinoSubView('INVENTARIO'); setIsMobileMenuOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${magazzinoSubView === 'INVENTARIO' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
+                    <button onClick={() => { setMagazzinoSubView('INVENTARIO'); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${magazzinoSubView === 'INVENTARIO' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
                       <Package className="w-4 h-4" /> Inventario Materiali
                     </button>
-                    <button onClick={() => { setMagazzinoSubView('PROCESSI_ATTIVI'); setIsMobileMenuOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${magazzinoSubView === 'PROCESSI_ATTIVI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
+                    <button onClick={() => { setMagazzinoSubView('PROCESSI_ATTIVI'); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${magazzinoSubView === 'PROCESSI_ATTIVI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
                       <Activity className="w-4 h-4" /> Lotti in Imbottigliamento
                     </button>
                   </>
                 )}
                 {activeArea === 'VENDITE' && (
                   <>
-                    <button onClick={() => { setVenditeSubView('CLIENTI'); setIsMobileMenuOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${venditeSubView === 'CLIENTI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
+                    <button onClick={() => { setVenditeSubView('CLIENTI'); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${venditeSubView === 'CLIENTI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
                       <Users className="w-4 h-4" /> Anagrafica Clienti
                     </button>
-                    <button onClick={() => { setVenditeSubView('ORDINI'); setIsMobileMenuOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${venditeSubView === 'ORDINI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
+                    <button onClick={() => { setVenditeSubView('ORDINI'); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${venditeSubView === 'ORDINI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
                       <FileText className="w-4 h-4" /> Ordini ed Evasioni
                     </button>
                   </>
                 )}
                 {activeArea === 'TODO' && (
                   <>
-                    <button onClick={() => { setTodoSubView('ATTIVI'); setIsMobileMenuOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${todoSubView === 'ATTIVI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
+                    <button onClick={() => { setTodoSubView('ATTIVI'); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${todoSubView === 'ATTIVI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
                       <ListTodo className="w-4 h-4" /> Promemoria Attivi
                     </button>
-                    <button onClick={() => { setTodoSubView('COMPLETATI'); setIsMobileMenuOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${todoSubView === 'COMPLETATI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
+                    <button onClick={() => { setTodoSubView('COMPLETATI'); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-lg transition-all ${todoSubView === 'COMPLETATI' ? 'bg-red-950 text-white shadow-md' : 'text-[#5E5E6E] hover:bg-[#F4F4F6]'}`}>
                       <Check className="w-4 h-4" /> Storico Completati
                     </button>
                   </>
@@ -704,9 +592,7 @@ export default function MainApp() {
             </div>
 
             {isMobileMenuOpen && (
-              <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden m-4 p-3 bg-red-950 text-white rounded-lg font-bold text-center text-xs">
-                Chiudi Menù
-              </button>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden m-4 p-3 bg-red-950 text-white rounded-lg font-bold text-center text-xs">Chiudi Menù</button>
             )}
 
             <div className="p-4 border-t border-[#F4F4F6] bg-[#FAFAFC]">
@@ -720,13 +606,10 @@ export default function MainApp() {
             </div>
           </aside>
 
-          {isMobileMenuOpen && (
-            <div onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 bg-black/40 z-40 md:hidden" />
-          )}
+          {isMobileMenuOpen && <div onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 bg-black/40 z-40 md:hidden" />}
         </>
       )}
 
-      {/* Contenuto principale */}
       <main className="flex-1 overflow-auto p-4 md:p-8 relative">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full">
@@ -751,7 +634,6 @@ export default function MainApp() {
             {activeArea === 'CANTINA' && (
               <Cantina
                 cantinaSubView={cantinaSubView}
-                setCantinaSubView={setCantinaSubView}
                 tanks={tanks}
                 isAddingTank={isAddingTank}
                 setIsAddingTank={setIsAddingTank}
@@ -774,7 +656,6 @@ export default function MainApp() {
             {activeArea === 'MAGAZZINO' && (
               <Magazzino
                 magazzinoSubView={magazzinoSubView}
-                setMagazzinoSubView={setMagazzinoSubView}
                 inventory={inventory}
                 isLabelingModalOpen={isLabelingModalOpen}
                 setIsLabelingModalOpen={setIsLabelingModalOpen}
@@ -803,7 +684,6 @@ export default function MainApp() {
             {activeArea === 'VENDITE' && (
               <Vendite
                 venditeSubView={venditeSubView}
-                setVenditeSubView={setVenditeSubView}
                 clients={clients}
                 orders={orders}
                 inventory={inventory}
@@ -824,7 +704,6 @@ export default function MainApp() {
             {activeArea === 'TODO' && (
               <Todo
                 todoSubView={todoSubView}
-                setTodoSubView={setTodoSubView}
                 todos={todos}
                 isAddingTodo={isAddingTodo}
                 setIsAddingTodo={setIsAddingTodo}
