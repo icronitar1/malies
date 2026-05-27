@@ -63,7 +63,7 @@ const getCollectionPath = (collectionName: string) => {
   return `artifacts/${appId}/public/data/${collectionName}`;
 };
 
-// Funzione di utilità per renderizzare in modo sicuro le date provenienti da Firestore (evita l'errore Object as child)
+// Funzione di utilità per renderizzare in modo sicuro le date provenienti da Firestore
 const renderDate = (dateVal: any): string => {
   if (!dateVal) return '';
   if (typeof dateVal === 'object' && dateVal.seconds !== undefined) {
@@ -212,7 +212,7 @@ export default function App() {
     }, 4000);
   };
 
-  // 3.1. INIZIALIZZAZIONE AUTH (Priorità Custom Token, Fallback Anonimo con gestione degli errori)
+  // 3.1. INIZIALIZZAZIONE AUTH
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -855,7 +855,7 @@ export default function App() {
                 )}
 
                 {/* 3. Sottomenù Vendite */}
-                {activeArea === 'VENDITE' && (
+                {activeArea === 'VENDITES' && (
                   <>
                     <button 
                       onClick={() => { setVenditeSubView('CLIENTI'); setIsMobileMenuOpen(false); }}
@@ -1765,7 +1765,7 @@ export default function App() {
                         <p className="text-xs md:text-sm text-gray-500 mt-1">Storico delle bottiglie etichettate spedite dal magazzino.</p>
                       </div>
                       <button 
-                        onClick={() => setIsAddingOrder(true)} 
+                        onClick={() => { setIsAddingOrder(true); }}
                         className="w-full sm:w-auto bg-red-950 text-white font-bold text-xs px-4 py-2.5 rounded-lg hover:bg-red-900 transition flex items-center justify-center gap-2 shadow-sm"
                       >
                         <Plus className="w-4 h-4" /> Nuovo Ordine Spedito
