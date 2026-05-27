@@ -1,4 +1,3 @@
-import React from 'react';
 import { Wine, Package, ListTodo, ShoppingCart, Leaf } from 'lucide-react';
 import { ActiveArea } from '../types';
 
